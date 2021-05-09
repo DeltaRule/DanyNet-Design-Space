@@ -17,13 +17,13 @@ if __name__ == "__main__":
     else:
         for _ in tqdm(range(SPAWN)):
             spawnedModels.append(createRandomModel(version = VERSION))
-        outfile = open("./prespawned/version{VERSION}.pkl",'wb')
+        outfile = open(f"./prespawned/version{VERSION}.pkl",'wb')
         pickle.dump(spawnedModels,outfile)
         outfile.close()
     #Learn Model
     for i in tqdm(range(len(spawnedModels))):
         spawnedModels[i] = trainModel(spawnedModels[i])
-    outfile = open("./prespawned/version{VERSION}_trained.pkl",'wb')
+    outfile = open(f"./prespawned/version{VERSION}_trained.pkl",'wb')
     pickle.dump(spawnedModels,outfile)
     outfile.close()
 
