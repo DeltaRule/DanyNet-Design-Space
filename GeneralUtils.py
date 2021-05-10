@@ -5,6 +5,8 @@ import time
 import traceback
 import torchvision
 import torchvision.transforms as transforms
+import scipy.stats
+
 def createRandomModel(version:int)->dict:
     """Generate Models Based on the Version I will update this
 
@@ -147,7 +149,7 @@ def testModel(modelLst:list,start:int)->float:
     
     
     start_time = time.time()
-    for i in range(20):
+    for i in range(50):
         
         opt.zero_grad()
         inp = torch.randn(100,3,32,32 , requires_grad=True, device = "cuda:0")
@@ -208,3 +210,47 @@ def trainModel(ModelDict:dict)->dict:
     ModelDict["trainLoss"] = trainLoss
     ModelDict["valLoss"] = valLoss/len(testLoader)
     return ModelDict
+
+def searchForInsert(sortedList:list, value:float)->int:
+    """Search for where to insert the value for the list to remain sorted
+
+    Args:
+        sortedList (list): a sorted list
+        value (float): the value to insert into the sorted list
+
+    Returns:
+        int: the index where to insert the value
+    """
+
+    for i in range(len(sortedList)-1,-1,-1):
+        if(sortedList[i] <= value):
+            return i+1
+    else:
+        return 0
+
+def empiricalBootstrap(sortedList:list)->tuple:
+    """make empiricalBootstrap
+
+    Args:
+        sortedList (list): a list sorted after the error
+
+    Returns:
+        tuple: the first and second x value to have 95% of all the data
+    """
+    #choose 10000 random sample with replacement
+    sampleList = np.random.choice(np.arange(len(sortedList)), size = (int(0.25* len(sortedList)), 10000))
+    #choose the minimum of each sample and sort the sampleList
+    sampleList = np.sort(np.amin(sampleList, axis=0))
+    #cut the worst 5% off because of the 95% confindence intervall but for minimum not mean NOT SURE ABOUT THAT ONE I COULDN'T FIND EMPIRICAL BOOTSTRAP FOR MINIMUM VALUES
+    sampleList = sampleList[int(0.95* len(sampleList)):]
+    sampleList = set(sampleList)
+    minX = 1e10
+    maxX = -1e10
+    for i in sampleList:
+        maxX = max(maxX,sortedList[i])
+        minX = min(minX,sortedList[i])
+    return minX, maxX
+    
+
+
+    
