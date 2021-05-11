@@ -7,20 +7,20 @@ The first test is about Normalization Technique and Art of Convolutions. You can
 
 The 3 Normalization Taktiks are:<br/>
 Batch Normalization<br/>
-![plot](./outputImages/batchnomalization_Version0.png)
+<img src= "./outputImages/batchnomalization_Version0.png">
 Weight Normalization<br/>
-![plot](./outputImages/weightnomalization_Version0.png)
+<img src= "./outputImages/weightnomalization_Version0.png">
 Instance Normalization<br/>  
-![plot](./outputImages/instancenomalization_Version0.png)
-There you can see that Batch Normalization is still the best Technique and that weight Decay seems to be better for this Example then Instance Normalization
+<img src= "./outputImages/instancenomalization_Version0.png">
+There you can see that Batch Normalization is still the best Technique and that weight normalization seems to be better for this Example then Instance Normalization
 
 The three arts of ConvBlocks are:<br/>
 ResnetBlock with 2 Convolutions without Groups (1)<br/>
-![plot](./outputImages/noGroups_Version0.png)
-ResnetBlock with 2 Convolutions first with Groups = filter and second no Groups(2)<br/>
-![plot]("./outputImages/Dec First_Version0.png")
-ResnetBlock with 2 Convolutions first no Groups second with Groups = amount of filter.(3)<br/>
-![plot]("./outputImages/Dec Second_Version0.png")
+<img src= "./outputImages/noGroups_Version0.png">
+ResnetBlock with 2 Convolutions first being a depthwise Convolution and second no Groups(2)<br/>
+<img src= "./outputImages/Dec First_Version0.png">
+ResnetBlock with 2 Convolutions first no Groups second being the depthwise Convolution.(3)<br/>
+<img src= "./outputImages/Dec Second_Version0.png">
 It Seems that around a 30% (2) and 70% (1) is the best option. But this doesn't seem to matter that much. The only thing that is slighly worese is the usage of (3).<br/>
 The Design space rating via EDF looks like this:<br/>
-![plot](./outputImages/DesignSpaceEDF_Version0.png)
+<img src= "./outputImages/DesignSpaceEDF_Version0.png">
