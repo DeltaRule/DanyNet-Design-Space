@@ -5,7 +5,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
-VERSION = 0 
+VERSION = 0
 LOAD = True
 SPAWN = 500
 if __name__ == "__main__":
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             plt.scatter(sortModel[key], sortModel["Validation error"])
             #it is already sorted so we don't need to give the loss aswell
             plt.axvspan(*empiricalBootstrap(sortModel[key]), alpha = 0.3)
-            plt.savefig(f"./outputImages/{key}_Version{VERSION}.png",dpi = 300)
+            plt.savefig(f"./outputImages/{key}_Version{VERSION}.png")
             plt.clf()
         elif(key == "Validation error"):
             plt.title("Design Space Evaluation")
@@ -84,5 +84,5 @@ if __name__ == "__main__":
             plt.ylabel("EDF")
             edf = np.linspace(0,1.0,len(sortModel[key]))
             plt.plot(sortModel[key], edf)
-            plt.savefig(f"./outputImages/DesignSpaceEDF_Version{VERSION}.png",dpi = 300)
+            plt.savefig(f"./outputImages/DesignSpaceEDF_Version{VERSION}.png")
             plt.clf()

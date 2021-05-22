@@ -5,7 +5,7 @@ import time
 import traceback
 import torchvision
 import torchvision.transforms as transforms
-import scipy.stats
+import scipy.stats as st
 
 def createRandomModel(version:int)->dict:
     """Generate Models Based on the Version I will update this
@@ -35,7 +35,9 @@ def createRandomModel(version:int)->dict:
             model.append([norms[i + strideTmp],startFilter*(2**(strideTmp)),3,"relu",np.random.randint(0,3),False])
         try:
             for _ in range(5):
+                
                 t = testModel(model,startFilter)
+                
                 if(t < 0.06 and t > 0.04):
                     cntNorm = np.zeros(3)
                     cntLayer = np.zeros(3)
@@ -111,7 +113,123 @@ def createRandomModel(version:int)->dict:
             traceback.print_exc() 
             return createRandomModel(version)
         
-        
+    elif(version == 1):
+                #the Parameters to varie are the Block types and the Normalization taktiks, this is for me personally and can't really be used for explaining the mobilenetV3
+        #Standart Parameter will be RELU, Kernelsize = 3, reduktion on 8x8
+        firstDepth = np.random.randint(8,18)
+        stride = np.random.randint(1,4)
+        whereStride = findStride(stride,firstDepth)
+        whereStride.append(firstDepth)
+        norms = "batch"
+        model = []
+        strideTmp = 0
+        startFilter = np.random.randint(20,80)
+        kernel3 = np.random.random()
+        relu = np.random.random()
+        sne = np.random.random()
+        for i in range(firstDepth):
+            if(i == whereStride[strideTmp]):
+                model.append([norms,startFilter*(2**(strideTmp+1)),np.random.choice([3,5],p=[kernel3,1-kernel3]),np.random.choice(["relu","swish"],p=[relu,1-relu]),"stride",np.random.choice([False,True],p=[sne,1-sne])])
+                strideTmp += 1
+            model.append([norms,startFilter*(2**(strideTmp)),np.random.choice([3,5],p=[kernel3,1-kernel3]),np.random.choice(["relu","swish"],p=[relu,1-relu]),0,np.random.choice([False,True],p=[sne,1-sne])])
+        try:
+            for _ in range(5):
+                # print(model,startFilter)
+                t = testModel(model,startFilter)
+                # print(t, model)
+                if(t < 0.12 and t > 0.1):
+                    kernel3 = 0
+                    swish = 0
+                    sne = 0
+                    tmp = 0
+                    depth = 0
+                    for layer in range(len(model)):
+                        if(model[layer][-2] == "stride"):
+                            if(depth > layer - tmp):
+                                print(model)
+                                return createRandomModel(version)
+                            else:
+                                depth = layer - tmp
+                                tmp = layer
+                    cntNorm = np.zeros(3)
+                    cntLayer = np.zeros(3)
+                    for layer in model:
+                        #count normalization % and layer type %
+                        if(layer[0] == "weight"):
+                            cntNorm[0] += 1
+                        elif(layer[0] == "instance"):
+                            cntNorm[1] += 1
+                        else:
+                            cntNorm[2] += 1 
+                        try:
+                            cntLayer[layer[4]] += 1
+                        except:
+                            pass
+                        if(layer[2] == 3):
+                            kernel3 = kernel3 + 1/len(model)
+                        if(layer[3] == "swish"):
+                            swish = swish + 1/len(model)
+                        if(layer[-1] == True):
+                            sne = sne + 1/len(model)
+
+                    return {"stride":stride, "kernel3":kernel3, "swish":swish, "sne":sne, "model":model, "norms": cntNorm/sum(cntNorm), "layerType": cntLayer/sum(cntLayer),
+                    "depth": len(model), "startFilter": startFilter}
+                elif(t < 0.1):
+                    #make model bigger when its to small
+                    tmpRandom =  np.random.randint(0,2)
+                    
+                    
+                    if(tmpRandom == 0):
+                        try:
+                            startFilter_new = np.random.randint(startFilter + 2,64)
+                            for layerIdx in range(len(model)):
+                                model[layerIdx][1] = startFilter_new * (model[layerIdx][1]//startFilter)
+                            startFilter = startFilter_new
+                        
+                        except:
+                            tmpRandom = 1
+                        
+                    if(tmpRandom == 1):
+                        start = 0
+                        for i in range(len(whereStride)-1):
+                            if(start - whereStride[i] != whereStride[i] - whereStride[i+1]):
+                                
+                                model.insert(start+i, [norms,startFilter*(2**(i)),np.random.choice([3,5],p=[kernel3,1-kernel3]),np.random.choice(["relu","swish"],p=[relu,1-relu]),0,np.random.choice([False,True],p=[sne,1-sne])])
+                                for j in range(i+1,len(whereStride)):
+                                    whereStride[j] += 1
+                                break
+                            else:
+                                start = whereStride[i]
+                    
+                else:
+                    tmpRandom =  np.random.randint(0,2)
+                    
+                    
+                    if(tmpRandom == 0):
+                        try:
+                            startFilter_new = np.random.randint(16,startFilter)
+                            for layerIdx in range(len(model)):
+                                model[layerIdx][1] = startFilter_new * (model[layerIdx][1]//startFilter)
+                            startFilter = startFilter_new
+                            
+                        except:
+                            tmpRandom = 1
+                        
+                    if(tmpRandom == 1 ):
+                        start = whereStride[-1]
+                        for i in range(len(whereStride)-1,0,-1):
+                            if(start - whereStride[i] != whereStride[i] - whereStride[i-1]):
+                                del model[start-1]
+                                for j in range(i,len(whereStride)):
+                                    whereStride[j] -= 1
+                                break
+                            else:
+                                start = whereStride[i]
+            else:
+                return createRandomModel(version)
+        except:
+            traceback.print_exc() 
+            return createRandomModel(version)
 
 def findStride(number:int, depth:int)-> list:
     """Gives where to do the strides so that depthi <= depthi+1
@@ -149,7 +267,7 @@ def testModel(modelLst:list,start:int)->float:
     
     
     start_time = time.time()
-    for i in range(50):
+    for i in range(40):
         
         opt.zero_grad()
         inp = torch.randn(100,3,32,32 , requires_grad=True, device = "cuda:0")
@@ -158,7 +276,7 @@ def testModel(modelLst:list,start:int)->float:
         ls = loss(out,target)
         ls.backward()
         opt.step()
-    return (time.time() - start_time)/30
+    return (time.time() - start_time)/40
 
 def trainModel(ModelDict:dict)->dict:
     """Train the Model and evalute the Model
@@ -240,16 +358,13 @@ def empiricalBootstrap(sortedList:list)->tuple:
     #choose 10000 random sample with replacement
     sampleList = np.random.choice(np.arange(len(sortedList)), size = (int(0.25* len(sortedList)), 10000))
     #choose the minimum of each sample and sort the sampleList
-    sampleList = np.sort(np.amin(sampleList, axis=0))
-    #cut the worst 5% off because of the 95% confindence intervall but for minimum not mean NOT SURE ABOUT THAT ONE I COULDN'T FIND EMPIRICAL BOOTSTRAP FOR MINIMUM VALUES
-    sampleList = sampleList[int(0.95* len(sampleList)):]
-    sampleList = set(sampleList)
-    minX = 1e10
-    maxX = -1e10
+    sampleList = np.amin(sampleList, axis=0).flatten()
+    getDistribution = []
     for i in sampleList:
-        maxX = max(maxX,sortedList[i])
-        minX = min(minX,sortedList[i])
-    return minX, maxX
+        getDistribution.append(sortedList[i])
+    getDistribution = np.sort(np.array(getDistribution))
+    
+    return getDistribution[int(0.025 *  len(getDistribution))], getDistribution[int((1 - 0.025) *  len(getDistribution))]
     
 
 
