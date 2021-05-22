@@ -5,7 +5,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
 
-VERSION = 0 
+VERSION = 0
 LOAD = True
 SPAWN = 500
 if __name__ == "__main__":
